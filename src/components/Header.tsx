@@ -7,6 +7,7 @@ const navLinks = [
   { label: 'الفئات', href: '#categories' },
   { label: 'المميزات', href: '#features' },
   { label: 'كيف يعمل', href: '#how' },
+  { label: 'تقديم', href: '#apply' },
 ]
 
 export default function Header() {

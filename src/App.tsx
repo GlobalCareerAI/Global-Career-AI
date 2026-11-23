@@ -4,6 +4,7 @@ import Categories from './components/Categories'
 import FeaturedJobs from './components/FeaturedJobs'
 import Features from './components/Features'
 import HowItWorks from './components/HowItWorks'
+import ApplyForm from './components/ApplyForm'
 import Footer from './components/Footer'
 
 export default function App() {
@@ -16,6 +17,7 @@ export default function App() {
         <FeaturedJobs />
         <Features />
         <HowItWorks />
+        <ApplyForm />
       </main>
       <Footer />
     </div>
