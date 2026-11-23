@@ -1,23 +1,55 @@
 import { useState } from 'react'
-import { MapPin, Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react'
+import { MapPin, Send, CheckCircle2, Loader2, AlertCircle, Briefcase, Building2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 type Status = 'idle' | 'submitting' | 'success' | 'error'
 
-const JOB_TITLE = 'مهندس برمجيات (Full-Stack) — الرياض'
+const JOB_TITLES = [
+  'مهندس برمجيات (Full-Stack)',
+  'مطوّر واجهات أمامية (Front-End)',
+  'مطوّر واجهات خلفية (Back-End)',
+  'مصمم منتجات (UX/UI)',
+  'أخصائي تسويق رقمي',
+  'محلل بيانات',
+  'مدير مبيعات',
+  'محاسب مالي',
+  'أخصائي موارد بشرية',
+  'أخرى',
+]
+
+const COUNTRIES = [
+  'السعودية',
+  'الإمارات',
+  'مصر',
+  'الأردن',
+  'قطر',
+  'الكويت',
+  'البحرين',
+  'عُمان',
+  'العراق',
+  'المغرب',
+  'تونس',
+  'الجزائر',
+  'دولة أخرى',
+]
 
 export default function ApplyForm() {
   const [form, setForm] = useState({
     full_name: '',
     email: '',
     phone: '',
+    job_title: JOB_TITLES[0],
+    custom_job: '',
+    country: COUNTRIES[0],
+    city: '',
+    work_type: 'دوام كامل',
     years_experience: '',
     cover_letter: '',
   })
   const [status, setStatus] = useState<Status>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   }
 
@@ -26,25 +58,38 @@ export default function ApplyForm() {
     setStatus('submitting')
     setErrorMsg('')
 
+    const jobTitle = form.job_title === 'أخرى' ? form.custom_job.trim() : form.job_title
     const years = Number(form.years_experience)
-    const payload = {
-      full_name: form.full_name.trim(),
-      email: form.email.trim(),
-      phone: form.phone.trim(),
-      job_title: JOB_TITLE,
-      years_experience: Number.isNaN(years) ? 0 : years,
-      cover_letter: form.cover_letter.trim() || null,
-    }
 
-    if (!payload.full_name || !payload.email || !payload.phone) {
+    if (!form.full_name.trim() || !form.email.trim() || !form.phone.trim()) {
       setStatus('error')
       setErrorMsg('يرجى تعبئة الاسم والبريد الإلكتروني ورقم الهاتف.')
       return
     }
+    if (!jobTitle) {
+      setStatus('error')
+      setErrorMsg('يرجى كتابة المسمى الوظيفي.')
+      return
+    }
+    if (!form.country || !form.city.trim()) {
+      setStatus('error')
+      setErrorMsg('يرجى تحديد الدولة والمدينة.')
+      return
+    }
 
-    const { error } = await supabase
-      .from('job_applications')
-      .insert(payload)
+    const payload = {
+      full_name: form.full_name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim(),
+      job_title: jobTitle,
+      country: form.country,
+      city: form.city.trim(),
+      work_type: form.work_type,
+      years_experience: Number.isNaN(years) ? 0 : years,
+      cover_letter: form.cover_letter.trim() || null,
+    }
+
+    const { error } = await supabase.from('job_applications').insert(payload)
 
     if (error) {
       setStatus('error')
@@ -53,7 +98,18 @@ export default function ApplyForm() {
     }
 
     setStatus('success')
-    setForm({ full_name: '', email: '', phone: '', years_experience: '', cover_letter: '' })
+    setForm({
+      full_name: '',
+      email: '',
+      phone: '',
+      job_title: JOB_TITLES[0],
+      custom_job: '',
+      country: COUNTRIES[0],
+      city: '',
+      work_type: 'دوام كامل',
+      years_experience: '',
+      cover_letter: '',
+    })
   }
 
   return (
@@ -63,30 +119,29 @@ export default function ApplyForm() {
           <div>
             <span className="chip">
               <MapPin className="h-3.5 w-3.5" />
-              فرصة في الرياض
+              فرص في كل المدن والدول
             </span>
             <h2 className="mt-3 text-3xl md:text-4xl font-bold tracking-tight text-ink-900">
-              قدّم على وظيفة
-              <span className="text-primary-600"> مهندس برمجيات </span>
-              في الرياض
+              قدّم على الوظيفة التي تناسبك،
+              <span className="text-primary-600"> في أي مكان</span>
             </h2>
             <p className="mt-3 text-ink-600 leading-relaxed">
-              انضم إلى فريق تقني متنامٍ في الرياض. نبحث عن مهندس Full-Stack متحمّس لبناء
-              منتجات تخدم ملايين المستخدمين. املأ النموذج وسنتواصل معك في حال تم اختيارك.
+              نموذج تقديم موحّد لكل الوظائف في جميع المدن والدول. املأ بياناتك، اختر
+              المسمى الوظيفي والموقع، وسنتواصل معك عند تطابق الملف.
             </p>
 
             <ul className="mt-6 space-y-3 text-sm text-ink-700">
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="h-5 w-5 text-accent-600 shrink-0" />
-                دوام كامل في الرياض (مع إمكانية العمل الهجين)
+                تقديم على أي وظيفة وفي أي مدينة أو دولة
               </li>
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="h-5 w-5 text-accent-600 shrink-0" />
-                راتب تنافسي ومزايا شاملة
+                خيارات متعددة: دوام كامل، عن بُعد، أو هجين
               </li>
               <li className="flex items-center gap-2.5">
                 <CheckCircle2 className="h-5 w-5 text-accent-600 shrink-0" />
-                بيئة عمل احترافية وفرص نمو حقيقية
+                طلبك يُحفظ ويتواصل معك فريق التوظيف مباشرة
               </li>
             </ul>
           </div>
@@ -101,10 +156,7 @@ export default function ApplyForm() {
                 <p className="mt-2 text-sm text-ink-600 leading-relaxed">
                   شكراً لتقديمك! سيراجع فريق التوظيف طلبك ويتواصل معك في حال تطابق الملف.
                 </p>
-                <button
-                  onClick={() => setStatus('idle')}
-                  className="mt-6 btn-ghost"
-                >
+                <button onClick={() => setStatus('idle')} className="mt-6 btn-ghost">
                   تقديم طلب آخر
                 </button>
               </div>
@@ -117,6 +169,41 @@ export default function ApplyForm() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="رقم الهاتف" name="phone" value={form.phone} onChange={handleChange} placeholder="05xxxxxxxx" />
                   <Field label="سنوات الخبرة" name="years_experience" type="number" value={form.years_experience} onChange={handleChange} placeholder="0" />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SelectField
+                    label="المسمى الوظيفي"
+                    name="job_title"
+                    value={form.job_title}
+                    onChange={handleChange}
+                    options={JOB_TITLES}
+                    icon={<Briefcase className="h-4 w-4 text-ink-400" />}
+                  />
+                  <SelectField
+                    label="نوع الدوام"
+                    name="work_type"
+                    value={form.work_type}
+                    onChange={handleChange}
+                    options={['دوام كامل', 'عن بُعد', 'هجين', 'دوام جزئي']}
+                    icon={<Briefcase className="h-4 w-4 text-ink-400" />}
+                  />
+                </div>
+
+                {form.job_title === 'أخرى' && (
+                  <Field label="اكتب المسمى الوظيفي" name="custom_job" value={form.custom_job} onChange={handleChange} placeholder="مثال: مهندس ذكاء اصطناعي" />
+                )}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <SelectField
+                    label="الدولة"
+                    name="country"
+                    value={form.country}
+                    onChange={handleChange}
+                    options={COUNTRIES}
+                    icon={<Building2 className="h-4 w-4 text-ink-400" />}
+                  />
+                  <Field label="المدينة" name="city" value={form.city} onChange={handleChange} placeholder="مثال: الرياض" />
                 </div>
 
                 <div>
@@ -189,6 +276,43 @@ function Field({ label, name, value, onChange, type = 'text', placeholder }: Fie
         placeholder={placeholder}
         className="w-full rounded-xl bg-ink-50/60 ring-1 ring-ink-100 px-3.5 py-3 text-sm text-ink-800 placeholder:text-ink-400 focus:outline-none focus:ring-2 focus:ring-primary-300 transition-shadow"
       />
+    </div>
+  )
+}
+
+type SelectFieldProps = {
+  label: string
+  name: string
+  value: string
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  options: string[]
+  icon?: React.ReactNode
+}
+
+function SelectField({ label, name, value, onChange, options, icon }: SelectFieldProps) {
+  return (
+    <div>
+      <label className="block text-sm font-bold text-ink-800 mb-1.5">{label}</label>
+      <div className="relative">
+        {icon && (
+          <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none">{icon}</span>
+        )}
+        <select
+          name={name}
+          value={value}
+          onChange={onChange}
+          className={`w-full appearance-none rounded-xl bg-ink-50/60 ring-1 ring-ink-100 ${icon ? 'pr-10' : 'pr-3.5'} pl-8 py-3 text-sm text-ink-800 focus:outline-none focus:ring-2 focus:ring-primary-300 transition-shadow`}
+        >
+          {options.map((opt) => (
+            <option key={opt} value={opt}>{opt}</option>
+          ))}
+        </select>
+        <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-ink-400">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </span>
+      </div>
     </div>
   )
 }
