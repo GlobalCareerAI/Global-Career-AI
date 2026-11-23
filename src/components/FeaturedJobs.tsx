@@ -106,7 +106,7 @@ export default function FeaturedJobs() {
                 ))}
               </div>
 
-              <button className="mt-auto btn-primary !py-2.5 !text-xs">تقديم الآن</button>
+              <a href="#apply" className="mt-auto btn-primary !py-2.5 !text-xs">تقديم الآن</a>
             </article>
           ))}
         </div>
